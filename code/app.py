@@ -29,7 +29,8 @@ def load_data():
     gdf = gpd.read_file(data_path)
     gdf = gdf.rename(columns={
     "VIOLATION DATE": "violation_date",
-    "VIOLATION DESCRIPTION": "violation_description"
+    "VIOLATION DESCRIPTION": "violation_description",
+    "VIOLATION STATUS": "violation_status"
     })
     #gdf["violation_date"] = pd.to_datetime(gdf["violation_date"])
     #gdf["violation_date"] = gdf["violation_date"].dt.strftime("%Y-%m-%d")
@@ -227,13 +228,26 @@ else:
 
 # PyDeck Layer
 st.subheader("Interactive Map")
+st.markdown("""
+<div style="display: flex; gap: 30px; align-items: center;">
+    <div><span style="color:rgb(255,0,0); font-size:20px;">●</span> OPEN</div>
+    <div><span style="color:rgb(0,200,0); font-size:20px;">●</span> COMPLIED</div>
+    <div><span style="color:rgb(150,150,150); font-size:20px;">●</span> Other</div>
+</div>
+""", unsafe_allow_html=True)
 
 layer = pdk.Layer(
     "ScatterplotLayer",
     data=map_data,
     get_position='[LONGITUDE, LATITUDE]',
     get_radius=50,   
-    get_fill_color=[200, 30, 0, 140],
+    get_fill_color="""
+    violation_status === 'OPEN'
+        ? [255, 0, 0, 180]
+        : violation_status === 'COMPLIED'
+            ? [0, 200, 0, 180]
+            : [150, 150, 150, 140]
+""",
     pickable=True,
 )
 
