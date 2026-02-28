@@ -2,11 +2,11 @@
 
 
 # to do: 
-# incorporate reason for violation
-# add month slider to map
-# to tooltip add address, and fine if it can be merged in
 # fix tooltips on first two graphs
-# check which categories are not useful
+# remove categories: other and permits
+# fix cropping of scatterplot
+# add address to map tooltip
+# consider adding a category for all
 
 from altair.vegalite.v5.api import Chart
 import streamlit as st
@@ -19,8 +19,6 @@ import altair as alt
 
 st.set_page_config(layout="wide")
 
-st.title("Chicago Building Violations from 2024-2026 by Category")
-
 # Load Data
 @st.cache_data
 def load_data():
@@ -32,10 +30,10 @@ def load_data():
     "VIOLATION DESCRIPTION": "violation_description",
     "VIOLATION STATUS": "violation_status"
     })
-    #gdf["violation_date"] = pd.to_datetime(gdf["violation_date"])
-    #gdf["violation_date"] = gdf["violation_date"].dt.strftime("%Y-%m-%d")
     gdf["violation_date"] = pd.to_datetime(gdf["violation_date"])
-    gdf["year_month"] = gdf["violation_date"].dt.to_period("M").astype(str)
+    gdf["violation_date"] = gdf["violation_date"].dt.strftime("%Y-%m-%d")
+    #gdf["violation_date"] = pd.to_datetime(gdf["violation_date"])
+    #gdf["year_month"] = gdf["violation_date"].dt.to_period("M").astype(str)
 
     return gdf
 
@@ -48,6 +46,9 @@ selected_category = st.sidebar.selectbox(
     "Select Violation Category",
     categories
 )
+
+
+st.title("Chicago Building Violations from 2024-2026: {}".format(selected_category))
 
 filtered = gdf[gdf["violation_category"] == selected_category].copy()
 
@@ -211,20 +212,21 @@ with col2:
     st.altair_chart(bar_chart)
 
 # Month filtering for Map Only 
-months = sorted(filtered["year_month"].dropna().unique().tolist())
-month_options = ["All Months"] + months
+#months = sorted(filtered["year_month"].dropna().unique().tolist())
+#month_options = ["All Months"] + months
 
-selected_month = st.select_slider(
-    "Select Month for Map",
-    options=month_options,
-    value="All Months"
-)
+#selected_month = st.select_slider(
+   # "Select Month for Map",
+    #options=month_options,
+    #value="All Months"
+#)
 
-if selected_month == "All Months":
-    map_data = filtered
-else:
-    map_data = filtered[filtered["year_month"] == selected_month]
+#if selected_month == "All Months":
+   # map_data = filtered
+#else:
+   # map_data = filtered[filtered["year_month"] == selected_month]
 
+map_data = filtered
 
 # PyDeck Layer
 st.subheader("Interactive Map")
